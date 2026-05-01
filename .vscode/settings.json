@@ -1,3 +1,4 @@
 {
-    "idf.currentSetup": "C:\\esp\\v5.5.2\\esp-idf"
+    "idf.currentSetup": "C:\\esp\\v5.5.2\\esp-idf",
+    "cmake.sourceDirectory": "C:/UCLL/MicroControllers/opdracht3"
 }
