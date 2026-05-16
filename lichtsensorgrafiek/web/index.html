@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lichtsensor Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0a0c10;
+      --surface: #111318;
+      --border:  #1e2130;
+      --accent:  #f0c040;
+      --accent2: #40c0f0;
+      --text:    #e8eaf0;
+      --muted:   #6b7080;
+      --glow:    rgba(240,192,64,0.15);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      background-image:
+        radial-gradient(ellipse 60% 40% at 50% -10%, rgba(240,192,64,0.08) 0%, transparent 70%);
+    }
+
+    header {
+      width: 100%;
+      max-width: 860px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo { display: flex; align-items: center; gap: .75rem; }
+
+    .logo-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: var(--accent);
+      display: grid; place-items: center;
+    }
+
+    .logo-icon svg { width: 20px; height: 20px; }
+
+    h1 { font-size: 1.25rem; font-weight: 800; letter-spacing: -.02em; }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-family: 'Space Mono', monospace;
+      font-size: .75rem;
+      color: var(--muted);
+    }
+
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #3adb76;
+      box-shadow: 0 0 6px #3adb76;
+      animation: pulse 2s ease infinite;
+    }
+
+    .dot.error { background: #f04040; box-shadow: 0 0 6px #f04040; }
+
+    @keyframes pulse {
+      0%,100% { opacity: 1; }
+      50%      { opacity: .4; }
+    }
+
+    main {
+      width: 100%;
+      max-width: 860px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .3s;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--glow);
+      opacity: 0;
+      transition: opacity .4s;
+    }
+
+    .card:hover::before { opacity: 1; }
+
+    .card-label {
+      font-size: .7rem;
+      font-family: 'Space Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-bottom: .75rem;
+    }
+
+    .card-value {
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--accent);
+      transition: color .3s;
+    }
+
+    .card-unit {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-top: .4rem;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .card.secondary .card-value { color: var(--accent2); }
+
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .chart-title {
+      font-size: .8rem;
+      font-family: 'Space Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+    }
+
+    .chart-badge {
+      font-size: .65rem;
+      font-family: 'Space Mono', monospace;
+      background: rgba(240,192,64,.12);
+      color: var(--accent);
+      border: 1px solid rgba(240,192,64,.25);
+      padding: .2rem .6rem;
+      border-radius: 99px;
+    }
+
+    canvas { width: 100% !important; }
+
+    footer {
+      margin-top: 2.5rem;
+      font-size: .7rem;
+      font-family: 'Space Mono', monospace;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 540px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0a0c10" stroke-width="2.5" stroke-linecap="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </div>
+      <h1>Lichtsensor</h1>
+    </div>
+    <div class="status">
+      <div class="dot" id="statusDot"></div>
+      <span id="statusText">Verbinden...</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Ruwe ADC-waarde</div>
+        <div class="card-value" id="rawValue">—</div>
+        <div class="card-unit">0 – 8191 (13-bit)</div>
+      </div>
+      <div class="card secondary">
+        <div class="card-label">Spanning</div>
+        <div class="card-value" id="mvValue">—</div>
+        <div class="card-unit">millivolt (mV)</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <span class="chart-title">Lichtintensiteit doorheen de tijd</span>
+        <span class="chart-badge">1 s interval</span>
+      </div>
+      <canvas id="lightChart" height="260"></canvas>
+    </div>
+  </main>
+
+  <footer>ESP32 Lichtsensor Dashboard &mdash; USB-serieel modus</footer>
+
+  <!-- Chart.js via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <script>
+    /*
+     * ============================================================
+     * JAVASCRIPT – live grafiek en data-polling
+     * ============================================================
+     * Elke seconde wordt /data opgevraagd via fetch().
+     * De Python-server levert JSON: { "raw": 1234, "mv": 987 }
+     * Chart.js voegt een nieuw datapunt toe (schuivend venster).
+     * ============================================================
+     */
+
+    const MAX_PUNTEN = 60; /* ~1 minuut aan datapunten bijhouden */
+
+    /* ── Grafiek aanmaken ── */
+    const ctx = document.getElementById("lightChart").getContext("2d");
+
+    const chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [{
+          label: "ADC-waarde (raw)",
+          data: [],
+          borderColor: "#f0c040",
+          backgroundColor: "rgba(240,192,64,0.08)",
+          borderWidth: 2,
+          pointRadius: 0,      /* Geen losse punten → cleane lijn */
+          tension: 0.35,       /* Zachte bochten                  */
+          fill: true,
+        }]
+      },
+      options: {
+        animation: false,      /* Geen animatie → vloeiende real-time update */
+        responsive: true,
+        interaction: { mode: "index", intersect: false },
+        scales: {
+          x: {
+            ticks: { color: "#6b7080", font: { family: "Space Mono", size: 10 }, maxTicksLimit: 8 },
+            grid:  { color: "#1e2130" }
+          },
+          y: {
+            min: 0,
+            max: 8191,         /* Maximale 13-bit ADC-waarde */
+            ticks: { color: "#6b7080", font: { family: "Space Mono", size: 10 } },
+            grid:  { color: "#1e2130" }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#111318",
+            borderColor: "#1e2130",
+            borderWidth: 1,
+            titleColor: "#6b7080",
+            bodyColor: "#f0c040",
+            bodyFont: { family: "Space Mono" },
+          }
+        }
+      }
+    });
+
+    /* ── Hulpfunctie: tijdstempel als HH:MM:SS ── */
+    function tijdstempel() {
+      return new Date().toLocaleTimeString("nl-BE", { hour12: false });
+    }
+
+    /* ── Data ophalen van de Python-server ── */
+    async function fetchData() {
+      try {
+        const respons = await fetch("/data");
+        if (!respons.ok) throw new Error("HTTP " + respons.status);
+
+        const json = await respons.json();  /* { raw: 1234, mv: 987 } */
+
+        /* Kaarten bijwerken */
+        document.getElementById("rawValue").textContent = json.raw;
+        document.getElementById("mvValue").textContent  = json.mv;
+
+        /* Datapunt toevoegen aan grafiek */
+        const labels = chart.data.labels;
+        const data   = chart.data.datasets[0].data;
+
+        labels.push(tijdstempel());
+        data.push(json.raw);
+
+        /* Schuivend venster: verwijder het oudste punt als limiet bereikt */
+        if (labels.length > MAX_PUNTEN) {
+          labels.shift();
+          data.shift();
+        }
+
+        chart.update();
+
+        /* Statusbalk: groen = OK */
+        document.getElementById("statusDot").className = "dot";
+        document.getElementById("statusText").textContent = "Live";
+
+      } catch (fout) {
+        console.error("Datafout:", fout);
+        document.getElementById("statusDot").className = "dot error";
+        document.getElementById("statusText").textContent = "Verbindingsfout";
+      }
+    }
+
+    /* ── Poll elke 1000 ms (1 seconde) ── */
+    setInterval(fetchData, 1000);
+    fetchData(); /* Meteen bij laden */
+  </script>
+
+</body>
+</html>

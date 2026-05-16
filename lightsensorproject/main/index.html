@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Light Sensor</title>
+  </head>
+  <body>
+    <h1>ESP32 Light Sensor</h1>
+
+    <script>
+      async function updateColor() {
+        try {
+          let res = await fetch("/light");
+          let value = parseInt(await res.text());
+
+          // Normalize 0–4095 → 0–255
+          let brightness = Math.floor(value / 16);
+
+          // Clamp just in case
+          brightness = Math.max(0, Math.min(255, brightness));
+
+          let color = `rgb(${brightness}, ${brightness}, ${brightness})`;
+
+          document.body.style.backgroundColor = color;
+        } catch (e) {
+          console.log(e);
+        }
+      }
+
+      setInterval(updateColor, 300);
+    </script>
+  </body>
+</html>
