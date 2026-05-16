@@ -1,0 +1,5 @@
+dependencies:
+
+  myADC:
+    path: components/myADC
+    git: https://github.com/KNaelaerts/ESP32_Periferie.git

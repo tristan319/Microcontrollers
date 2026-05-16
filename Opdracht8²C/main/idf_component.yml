@@ -1,0 +1,8 @@
+dependencies:
+
+  myUART:
+    path: components/myUART
+    git: https://github.com/KNaelaerts/ESP32_Periferie.git
+  myI2C:
+    path: components/myI2C
+    git: https://github.com/KNaelaerts/ESP32_Periferie.git

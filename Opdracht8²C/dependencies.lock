@@ -1,0 +1,27 @@
+dependencies:
+  idf:
+    source:
+      type: idf
+    version: 6.0.0
+  myI2C:
+    component_hash: 47f8b2d9cf31ac1f8be9f7db135a2da27df7621ff1967b64e969896e5a60c681
+    dependencies: []
+    source:
+      git: https://github.com/KNaelaerts/ESP32_Periferie.git
+      path: components/myI2C
+      type: git
+    version: a1623523337cabfc1783a4fe8213e07b7b3ea8f5
+  myUART:
+    component_hash: dc639225350069227544c7eaeabda6715a352042eb0608d5e7afdac4965b7e0c
+    dependencies: []
+    source:
+      git: https://github.com/KNaelaerts/ESP32_Periferie.git
+      path: components/myUART
+      type: git
+    version: a1623523337cabfc1783a4fe8213e07b7b3ea8f5
+direct_dependencies:
+- myI2C
+- myUART
+manifest_hash: 3b29499a4c489e874c19dbd7a60e4cff644b5fc8cfe89f8db866378d0c37bfef
+target: esp32
+version: 3.0.0
